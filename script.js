@@ -22,6 +22,7 @@ const playAgainBtn = document.querySelector('.play-again');
 let questionAmount = 0;
 let equationsArray = [];
 let playerGuessArray = [];
+let bestScoreArray = [];
 
 // Game Page
 let firstNumber = 0;
@@ -35,10 +36,49 @@ let timePlayed = 0;
 let baseTime = 0;
 let penaltyTime = 0;
 let finalTime = 0;
-let finalTimeDisplay = '0.0s';
+let finalTimeDisplay = '0.0';
 
 // Scroll
 let valueY = 0;
+
+//best scores splash
+function bestScoresToDOM(){
+  bestScores.forEach((bestScore, index) => {
+    const bestScoreEl = bestScore;
+    bestScoreEl.textContent = `${bestScoreArray[index].bestScore}s`;
+  });
+}
+
+//check local storage for best scores and set best scores
+function getSavedBestScores(){
+  if(localStorage.getItem('bestScorse')){
+    bestScoreArray = JSON.parse(localStorage.bestScores);
+  }else{
+    bestScoreArray = [
+      { questions: 10, bestScore: finalTimeDisplay },
+      { questions: 25, bestScore: finalTimeDisplay },
+      { questions: 50, bestScore: finalTimeDisplay },
+      { questions: 99, bestScore: finalTimeDisplay },
+    ];
+    localStorage.setItem('bestScores', JSON.stringify(bestScoreArray));
+  }
+  bestScoresToDOM();
+}
+
+//update bestScore array
+function updateBestScore(){
+  bestScoreArray.forEach((score, index) => {
+    if(questionAmount == score.questions){
+      const savedBestScore = Number(bestScoreArray[index].bestScore);
+
+      if(savedBestScore === 0 || savedBestScore > final){
+        bestScoreArray[index].bestScore= finalTimeDisplay;
+      }
+    }
+  });
+  bestScoresToDOM();
+  localStorage.setItem('bestScores', JSON.stringify(bestScoreArray));
+}
 
 //reset game
 function playAgain(){
@@ -68,6 +108,7 @@ function scoresToDOM(){
   baseTimeEl.textContent = `Base Time: ${baseTime}`;
   penaltyTimeEl.textContent = `Penalty: +${penaltyTime}s`;
   finalTimeEl.textContent = `${finalTimeDisplay}s`;
+  updateBestScore();
 
   itemContainer.scrollTo({ top: 0, behavior: 'instant'});
   showScorePage();
@@ -265,3 +306,6 @@ startForm.addEventListener('click', () => {
 //event listeners
 startForm.addEventListener('submit', selectQuestionAmount);
 gamePage.addEventListener('click', startTimer);
+
+//on load
+getSavedBestScores();
